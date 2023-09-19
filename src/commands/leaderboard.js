@@ -6,7 +6,7 @@ module.exports = {
     .setName('leaderboard')
     .setDescription('Manage course leaderboards')
     .addStringOption((option) =>
-      option.setName('add').setDescription('Create a new leaderboard for a course').setRequired(true).addChoices(
+      option.setName('command').setDescription('Create a new leaderboard for a course').setRequired(true).addChoices(
         {
           name: 'Add',
           value: 'add',
@@ -20,17 +20,16 @@ module.exports = {
           value: 'show',
         }
       )
-    ),
+    )
+    .addStringOption((option) => option.setName('course').setDescription('Course name').setRequired(true)),
 
   async execute(interaction) {
-    const players = [
-      { name: 'Alice', score: 100 },
-      { name: 'Bob', score: 85 },
-      { name: 'Charlie', score: 120 },
-    ]
+    const command = interaction.options.getString('command')
+    const course = interaction.options.getString('course')
 
-    const table = generators.generateLeaderBoard(players)
+    const courses = []
+    const leaderboardMessages = []
 
-    await interaction.reply(table)
+    await interaction.reply('[INFO] This command is not yet implemented.')
   },
 }
