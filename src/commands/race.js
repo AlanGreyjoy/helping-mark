@@ -20,6 +20,7 @@ module.exports = {
       option.setName('time').setDescription('Race time (use format HH:MM:SS)').setRequired(true)
     )
     .addStringOption((option) => option.setName('course').setDescription('Course name').setRequired(true).addChoices()),
+
   async execute(interaction) {
     await interaction.reply('[INFO] This command is not yet implemented.')
   },

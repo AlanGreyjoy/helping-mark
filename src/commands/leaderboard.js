@@ -58,7 +58,8 @@ module.exports = {
 
 /**
  * Add a course to the leaderboard
- * @param {*} courseName
+ * @param {String} courseName
+ * @param {Interaction Instance} interaction
  * @returns
  */
 async function addCourse(courseName, interaction) {
