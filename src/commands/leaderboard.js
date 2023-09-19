@@ -90,13 +90,6 @@ async function addCourse(courseName, interaction) {
   // Store the message ID for future reference
   leaderboardMessages.set(course, leaderboardMessage.id)
 
-  // Create a sub-thread for the course
-  const category = interaction.guild.channels.cache.find(
-    (channel) => channel.type === 'GUILD_CATEGORY' && channel.name === 'Leaderboards'
-  )
-
-  console.log(`[INFO] Found category ${category}`)
-
   // Adjust the category name
   const threadName = courseName
   const autoArchiveDuration = 1440 // Adjust as needed
