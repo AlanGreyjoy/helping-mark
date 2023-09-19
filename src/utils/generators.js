@@ -1,4 +1,4 @@
-module.exports.generateLeaderBoard = () => {
+module.exports.generateLeaderBoard = (players) => {
   players.sort((a, b) => b.score - a.score)
 
   let leaderboard = '+-----+------------+-------+\n'

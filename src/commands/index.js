@@ -11,7 +11,7 @@ const path = require('path')
 const commandsPath = path.join(__dirname, './')
 const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'))
 
-module.exports.getCommands = () => {
+module.exports.getCommands = async () => {
   const collection = new Collection()
 
   for (const file of commandFiles) {
