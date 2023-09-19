@@ -3,7 +3,8 @@ const { Client, GatewayIntentBits, MessageEmbed } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 
-const commands = require('./commands');
+const commands = [];
+const test = '';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
