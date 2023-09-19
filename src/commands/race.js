@@ -22,6 +22,15 @@ module.exports = {
     .addStringOption((option) => option.setName('course').setDescription('Course name').setRequired(true).addChoices()),
 
   async execute(interaction) {
+    const command = interaction.options.getString('command')
+    const time = interaction.options.getString('time')
+
+    console.log(`[INFO] Running command: ${interaction.commandName}...`)
+    console.log(`[INFO] Command: ${command}`)
+    console.log(`[INFO] Time: ${time}`)
+
+    //Have fun!
+
     await interaction.reply('[INFO] This command is not yet implemented.')
   },
 }
