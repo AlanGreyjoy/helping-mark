@@ -1,10 +1,8 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder } = require('discord.js')
 
 module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('race')
-    .setDescription('Add or remove a race time for a course'),
+  data: new SlashCommandBuilder().setName('race').setDescription('Add or remove a race time for a course'),
   async execute(interaction) {
-    await interaction.reply('Hello world!');
+    await interaction.reply('Hello world!')
   },
-};
+}

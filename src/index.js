@@ -1,17 +1,15 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits, MessageEmbed } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+require('dotenv').config()
+const { Client, GatewayIntentBits, MessageEmbed, Collection, Events } = require('discord.js')
+const { getCommands } = require('./commands')
 
-const commands = [];
-const test = '';
+const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN
+const GUILD_ID = process.env.GUILD_ID
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
-});
+})
 
-const BOT_TOKEN = process.env.DISCORD_BOT_TOKEN; // Replace with your actual bot token
-const GUILD_ID = process.env.GUILD_ID; // Replace with your actual guild ID
+client.commands = getCommands()
 
 const commandsNo = [
   {
@@ -68,59 +66,74 @@ const commandsNo = [
       },
     ],
   },
-];
+]
 
-const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
-
-const leaderboardMessages = {};
-const raceTimes = {};
-const courses = new Set();
-const addedCourses = [...courses];
+const leaderboardMessages = {}
+const raceTimes = {}
+const courses = new Set()
+const addedCourses = [...courses]
 
 /**
- * Creates a leaderboard embedded message.
+ * Client Ready Event
  */
-client.once('ready', async () => {
-  client.commands = commands;
-  console.log(`Logged in as ${client.user.tag} - ${client.user.id}`);
-});
+client.on(Events.ClientReady, async () => {
+  console.log(`[INFO] Logged in as ${client.user.tag} - ${client.user.id}`)
+})
 
 /**
- * Handles interaction events.
+ * Client Interaction Create Event
  */
-client.on('messageCreate', async (message) => {
-  // Your message handling logic here...
-});
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isChatInputCommand()) return
+
+  const command = interaction.client.commands.get(interaction.commandName)
+
+  if (!command) {
+    console.error(`No command matching ${interaction.commandName} was found.`)
+    return
+  }
+
+  try {
+    await command.execute(interaction)
+  } catch (error) {
+    console.error(error)
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true })
+    } else {
+      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true })
+    }
+  }
+})
 
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isCommand()) return;
+  if (!interaction.isCommand()) return
 
-  const { commandName } = interaction;
+  const { commandName } = interaction
 
   if (commandName === 'race') {
-    const command = interaction.options.getString('command');
-    const time = interaction.options.getString('time');
-    const course = interaction.options.getString('course');
+    const command = interaction.options.getString('command')
+    const time = interaction.options.getString('time')
+    const course = interaction.options.getString('course')
 
     client.on('interactionCreate', async (interaction) => {
-      if (!interaction.isCommand()) return;
+      if (!interaction.isCommand()) return
 
-      const { commandName } = interaction;
+      const { commandName } = interaction
 
-      console.log(commandName);
+      console.log(commandName)
 
       if (commandName === 'race') {
-        const command = interaction.options.getString('command');
-        const time = interaction.options.getString('time');
-        const course = interaction.options.getString('course');
+        const command = interaction.options.getString('command')
+        const time = interaction.options.getString('time')
+        const course = interaction.options.getString('course')
 
         // Check if the provided course name is registered
         if (course && !courses.has(course)) {
           await interaction.reply({
             content: 'Course not found. Please use a registered course name.',
             ephemeral: true,
-          });
-          return;
+          })
+          return
         }
 
         if (command === 'add') {
@@ -128,32 +141,30 @@ client.on('interactionCreate', async (interaction) => {
           // Check if the time belongs in the top ten
           if (timeBelongsInTopTen(course, time)) {
             // Edit the embedded message in the thread to include the updated leaderboard
-            await editLeaderboardMessage(interaction, course);
+            await editLeaderboardMessage(interaction, course)
           }
         } else if (command === 'remove') {
           // Your logic to remove a race time...
         }
       }
-    });
+    })
 
     function timeBelongsInTopTen(courseName, time) {
       // Check if the provided time belongs in the top ten for the specified course
       // You can implement your logic to compare times here
-      return true; // Replace with your logic
+      return true // Replace with your logic
     }
 
     async function editLeaderboardMessage(interaction, courseName) {
       // Edit the embedded message in the thread to include the updated leaderboard
-      const thread = interaction.guild.threads.cache.find(
-        (thread) => thread.name === courseName
-      );
+      const thread = interaction.guild.threads.cache.find((thread) => thread.name === courseName)
 
       if (thread) {
-        const leaderboardEmbed = createLeaderboardEmbed(courseName); // Generate the updated leaderboard
-        const firstMessage = await thread.messages.fetchPinned().first();
+        const leaderboardEmbed = createLeaderboardEmbed(courseName) // Generate the updated leaderboard
+        const firstMessage = await thread.messages.fetchPinned().first()
 
         if (firstMessage) {
-          await firstMessage.edit({ embeds: [leaderboardEmbed] });
+          await firstMessage.edit({ embeds: [leaderboardEmbed] })
         }
       }
     }
@@ -163,86 +174,78 @@ client.on('interactionCreate', async (interaction) => {
       // You can implement your logic to format the leaderboard here
       const leaderboardEmbed = new MessageEmbed()
         .setTitle(`Leaderboard for ${courseName}`)
-        .setDescription('Updated leaderboard goes here.');
+        .setDescription('Updated leaderboard goes here.')
 
-      return leaderboardEmbed;
+      return leaderboardEmbed
     }
   } else if (commandName === 'leaderboard') {
-    const command = interaction.options.getString('command');
-    const course = interaction.options.getString('course');
+    const command = interaction.options.getString('command')
+    const course = interaction.options.getString('course')
 
     // Your /leaderboard logic...
-    const courses = new Set();
-    const leaderboardMessages = new Map();
+    const courses = new Set()
+    const leaderboardMessages = new Map()
 
     client.on('interactionCreate', async (interaction) => {
-      if (!interaction.isCommand()) return;
+      if (!interaction.isCommand()) return
 
-      const { commandName } = interaction;
+      const { commandName } = interaction
 
       if (commandName === 'leaderboard') {
-        const command = interaction.options.getString('command');
-        const course = interaction.options.getString('course');
+        const command = interaction.options.getString('command')
+        const course = interaction.options.getString('course')
 
         if (command === 'add') {
           if (!course) {
             await interaction.reply({
-              content:
-                'Incomplete /leaderboard add command. Usage: /leaderboard add <course>',
+              content: 'Incomplete /leaderboard add command. Usage: /leaderboard add <course>',
               ephemeral: true,
-            });
-            return;
+            })
+            return
           }
 
           // Your logic to add a course to the leaderboard
-          const courseName = course.toLowerCase();
+          const courseName = course.toLowerCase()
           if (courses.has(courseName)) {
             await interaction.reply({
               content: 'Course already exists.',
               ephemeral: true,
-            });
+            })
           } else {
-            courses.add(courseName);
+            courses.add(courseName)
 
             // Create a placeholder message in the same channel
             const leaderboardMessage = await interaction.channel.send({
               embeds: [createLeaderboardEmbed(courseName)],
-            });
+            })
 
-            await interaction.reply(`Course ${courseName} added.`);
+            await interaction.reply(`Course ${courseName} added.`)
 
             // Store the message ID for future reference
-            leaderboardMessages.set(courseName, leaderboardMessage.id);
+            leaderboardMessages.set(courseName, leaderboardMessage.id)
 
             // Create a sub-thread for the course
             const category = interaction.guild.channels.cache.find(
-              (channel) =>
-                channel.type === 'GUILD_CATEGORY' &&
-                channel.name === 'Leaderboards'
-            ); // Adjust the category name
-            const threadName = courseName;
-            const autoArchiveDuration = 1440; // Adjust as needed
+              (channel) => channel.type === 'GUILD_CATEGORY' && channel.name === 'Leaderboards'
+            ) // Adjust the category name
+            const threadName = courseName
+            const autoArchiveDuration = 1440 // Adjust as needed
 
-            const subThread = await interaction.guild.channels.create(
-              threadName,
-              {
-                type: 'GUILD_PUBLIC_THREAD',
-                parent: category,
-                autoArchiveDuration: autoArchiveDuration,
-              }
-            );
+            const subThread = await interaction.guild.channels.create(threadName, {
+              type: 'GUILD_PUBLIC_THREAD',
+              parent: category,
+              autoArchiveDuration: autoArchiveDuration,
+            })
 
-            await subThread.send(
-              `Welcome to the leaderboard for ${courseName}!`
-            );
+            await subThread.send(`Welcome to the leaderboard for ${courseName}!`)
 
             // Edit the leaderboard message to include the updated leaderboard
-            await editLeaderboardMessage(interaction, courseName);
+            await editLeaderboardMessage(interaction, courseName)
           }
         }
       }
-    });
+    })
   }
-});
+})
 
-client.login(BOT_TOKEN);
+client.login(BOT_TOKEN)
