@@ -12,11 +12,6 @@ const client = new Client({
 
 startDiscordBot()
 
-const leaderboardMessages = {}
-const raceTimes = {}
-const courses = new Set()
-const addedCourses = [...courses]
-
 /**
  * Client Ready Event
  */
